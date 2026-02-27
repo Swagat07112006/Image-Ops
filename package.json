@@ -1,0 +1,22 @@
+{
+  "name": "image-review-app",
+  "version": "1.0.0",
+  "description": "Image upload and review app with admin dashboard",
+  "main": "backend/index.js",
+  "scripts": {
+    "start": "node backend/index.js",
+    "dev": "node --watch backend/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "mongoose": "^9.2.2",
+    "multer": "^1.4.4-lts.1",
+    "multer-storage-cloudinary": "^4.0.0"
+  }
+}
