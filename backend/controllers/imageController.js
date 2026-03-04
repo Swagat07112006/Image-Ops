@@ -81,6 +81,9 @@ function deleteImage(req, res) {
       }
 
       deleteFile(image.cloudId)
+        .catch(function (err) {
+          console.log("Cloudinary delete failed (might already be gone):", err.message);
+        })
         .then(function () {
           return Image.findByIdAndDelete(req.params.id);
         })

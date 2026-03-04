@@ -5,6 +5,7 @@ import ImageCard from "../components/ImageCard";
 function AdminPage() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("pending");
 
   function fetchImages() {
     setLoading(true);
@@ -13,8 +14,7 @@ function AdminPage() {
         setImages(response.data);
         setLoading(false);
       })
-      .catch(function (error) {
-        console.log(error);
+      .catch(function () {
         alert("Failed to load images. Make sure server and MongoDB are running.");
         setLoading(false);
       });
@@ -26,50 +26,83 @@ function AdminPage() {
 
   function handleStatus(id, status, reason) {
     updateImageStatus(id, status, reason)
-      .then(function () {
-        fetchImages();
-      })
-      .catch(function () {
-        alert("Failed to update status");
-      });
+      .then(function () { fetchImages(); })
+      .catch(function () { alert("Failed to update status"); });
   }
 
   function handleDelete(id) {
     if (!window.confirm("Delete this image?")) return;
     deleteImage(id)
-      .then(function () {
-        fetchImages();
-      })
-      .catch(function () {
-        alert("Failed to delete");
-      });
+      .then(function () { fetchImages(); })
+      .catch(function () { alert("Failed to delete"); });
   }
 
-  const pendingImages = images.filter(function (img) {
-    return img.status === "pending";
-  });
-  const acceptedImages = images.filter(function (img) {
-    return img.status === "accepted";
-  });
-  const rejectedImages = images.filter(function (img) {
-    return img.status === "rejected";
-  });
+  var counts = {
+    pending: images.filter(function (i) { return i.status === "pending"; }).length,
+    accepted: images.filter(function (i) { return i.status === "accepted"; }).length,
+    rejected: images.filter(function (i) { return i.status === "rejected"; }).length,
+  };
+
+  var filtered = images.filter(function (i) { return i.status === activeTab; });
+
+  var tabs = [
+    { key: "pending", label: "Pending", color: "amber", icon: "⏳" },
+    { key: "accepted", label: "Accepted", color: "emerald", icon: "✅" },
+    { key: "rejected", label: "Rejected", color: "rose", icon: "❌" },
+  ];
 
   if (loading) {
-    return <p className="text-gray-500 mt-10">Loading images...</p>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-3">
+          <div className="text-4xl animate-pulse">🖼️</div>
+          <p className="text-gray-400 text-sm">Loading images...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">Admin Dashboard</h2>
+        <p className="text-gray-500 mt-1">{images.length} total images</p>
+      </div>
 
-      <div className="mb-8 bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-        <h3 className="text-lg font-bold mb-3 text-yellow-700">
-          Pending Review ({pendingImages.length})
-        </h3>
-        {pendingImages.length === 0 && <p className="text-gray-400">No pending images.</p>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {pendingImages.map(function (img) {
+      <div className="flex gap-2 mb-6 bg-gray-100 p-1.5 rounded-xl w-fit">
+        {tabs.map(function (tab) {
+          var isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={function () { setActiveTab(tab.key); }}
+              className={
+                "px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer " +
+                (isActive
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700")
+              }
+            >
+              {tab.icon} {tab.label}
+              <span className={
+                "ml-1.5 text-xs px-1.5 py-0.5 rounded-full " +
+                (isActive ? "bg-" + tab.color + "-100 text-" + tab.color + "-600" : "bg-gray-200 text-gray-500")
+              }>
+                {counts[tab.key]}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="text-5xl mb-3">📭</div>
+          <p className="text-gray-400">No {activeTab} images right now</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map(function (img) {
             return (
               <ImageCard
                 key={img._id}
@@ -80,45 +113,7 @@ function AdminPage() {
             );
           })}
         </div>
-      </div>
-
-      <div className="mb-8 bg-green-50 border border-green-300 rounded-lg p-4">
-        <h3 className="text-lg font-bold mb-3 text-green-700">
-          Accepted ({acceptedImages.length})
-        </h3>
-        {acceptedImages.length === 0 && <p className="text-gray-400">No accepted images.</p>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {acceptedImages.map(function (img) {
-            return (
-              <ImageCard
-                key={img._id}
-                image={img}
-                onStatus={handleStatus}
-                onDelete={handleDelete}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mb-8 bg-red-50 border border-red-300 rounded-lg p-4">
-        <h3 className="text-lg font-bold mb-3 text-red-700">
-          Rejected ({rejectedImages.length})
-        </h3>
-        {rejectedImages.length === 0 && <p className="text-gray-400">No rejected images.</p>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rejectedImages.map(function (img) {
-            return (
-              <ImageCard
-                key={img._id}
-                image={img}
-                onStatus={handleStatus}
-                onDelete={handleDelete}
-              />
-            );
-          })}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
