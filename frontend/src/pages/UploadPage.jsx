@@ -2,13 +2,13 @@ import { useState } from "react";
 import { uploadImage } from "../services/api";
 
 function UploadPage() {
-  var [file, setFile] = useState(null);
-  var [preview, setPreview] = useState(null);
-  var [uploading, setUploading] = useState(false);
-  var [message, setMessage] = useState("");
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
 
   function handleFileChange(e) {
-    var selected = e.target.files[0];
+    const selected = e.target.files[0];
     if (!selected) return;
 
     if (selected.size > 5 * 1024 * 1024) {
@@ -32,7 +32,7 @@ function UploadPage() {
     setUploading(true);
     setMessage("");
 
-    var formData = new FormData();
+    const formData = new FormData();
     formData.append("image", file);
 
     uploadImage(formData)

@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 function ImageCard({ image, onStatus, onDelete }) {
-  var [reason, setReason] = useState("");
-  var [showReason, setShowReason] = useState(false);
+  const [reason, setReason] = useState("");
+  const [showReason, setShowReason] = useState(false);
 
   function handleReject() {
     if (!showReason) {

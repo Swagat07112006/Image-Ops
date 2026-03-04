@@ -3,8 +3,8 @@ import { getImages, updateImageStatus, deleteImage } from "../services/api";
 import ImageCard from "../components/ImageCard";
 
 function AdminPage() {
-  var [images, setImages] = useState([]);
-  var [loading, setLoading] = useState(true);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   function fetchImages() {
     setLoading(true);
@@ -45,13 +45,13 @@ function AdminPage() {
       });
   }
 
-  var pendingImages = images.filter(function (img) {
+  const pendingImages = images.filter(function (img) {
     return img.status === "pending";
   });
-  var acceptedImages = images.filter(function (img) {
+  const acceptedImages = images.filter(function (img) {
     return img.status === "accepted";
   });
-  var rejectedImages = images.filter(function (img) {
+  const rejectedImages = images.filter(function (img) {
     return img.status === "rejected";
   });
 

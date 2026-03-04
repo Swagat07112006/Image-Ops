@@ -1,7 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import connectDB from "./config/db.js";
+import path from "path";
+import connectDB from "./db/db.js";
 import imageRoutes from "./routes/imageRoutes.js";
 
 connectDB();
@@ -10,6 +11,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.use("/api/images", imageRoutes);
 

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const imageSchema = new mongoose.Schema({
   originalName: String,
   imageUrl: String,
-  cloudinaryId: String,
+  cloudId: String,
   status: {
     type: String,
     default: "pending",

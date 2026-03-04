@@ -1,19 +1,27 @@
 import Image from "../models/Image.js";
-import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
+import { uploadFile, deleteFile } from "../utils/cloudinary.js";
 
 function uploadImage(req, res) {
   if (!req.file) {
     return res.status(400).json({ message: "Please select an image" });
   }
 
-  var newImage = new Image({
-    originalName: req.file.originalname,
-    imageUrl: req.file.path,
-    cloudinaryId: req.file.filename,
-  });
+  uploadFile(req.file.path)
+    .then(function (result) {
+      // Delete local file after cloud upload
+      fs.unlink(req.file.path, function (err) {
+        if (err) console.log("Local file delete error:", err.message);
+      });
 
-  newImage
-    .save()
+      const newImage = new Image({
+        originalName: req.file.originalname,
+        imageUrl: result.secure_url,
+        cloudId: result.public_id,
+      });
+
+      return newImage.save();
+    })
     .then(function (savedImage) {
       res
         .status(201)
@@ -38,14 +46,14 @@ function getAllImages(req, res) {
 }
 
 function updateStatus(req, res) {
-  var status = req.body.status;
-  var rejectionReason = req.body.rejectionReason || "";
+  const status = req.body.status;
+  const rejectionReason = req.body.rejectionReason || "";
 
   if (status !== "pending" && status !== "accepted" && status !== "rejected") {
     return res.status(400).json({ message: "Invalid status" });
   }
 
-  var updateData = { status: status };
+  const updateData = { status: status };
   if (status === "rejected") {
     updateData.rejectionReason = rejectionReason;
   } else {
@@ -72,11 +80,17 @@ function deleteImage(req, res) {
         return res.status(404).json({ message: "Image not found" });
       }
 
-      cloudinary.uploader.destroy(image.cloudinaryId).then(function () {
-        Image.findByIdAndDelete(req.params.id).then(function () {
+      deleteFile(image.cloudId)
+        .then(function () {
+          return Image.findByIdAndDelete(req.params.id);
+        })
+        .then(function () {
           res.json({ message: "Image deleted" });
+        })
+        .catch(function (err) {
+          console.log("Delete error:", err);
+          res.status(500).json({ message: "Could not delete image" });
         });
-      });
     })
     .catch(function (err) {
       console.log("Delete error:", err);
